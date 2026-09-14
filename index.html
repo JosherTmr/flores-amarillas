@@ -2197,23 +2197,65 @@ body {
   100% { opacity: 0; transform: translateY(-22vmin) scale(0.75) rotate(10deg); }
 }
 
-.pista {
+/* --- La canción ------------------------------------------------
+   El reproductor de YouTube queda a la vista pero apagado en la
+   esquina; el botón es el control real. */
+
+.reproductor {
   position: fixed;
-  bottom: clamp(1.1rem, 3vh, 2.4rem);
   left: clamp(1rem, 3vw, 2.2rem);
+  bottom: calc(clamp(1.1rem, 3vh, 2.4rem) + 3.1rem);
   z-index: 300;
-  font-size: 0.68rem;
-  font-weight: 300;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
+  width: clamp(124px, 16vmin, 168px);
+  aspect-ratio: 16 / 9;
+  border-radius: 0.45rem;
+  overflow: hidden;
+  opacity: 0.26;
+  transition: opacity 0.45s ease;
+}
+
+.reproductor:hover,
+.reproductor:focus-within { opacity: 0.8; }
+
+.reproductor iframe { display: block; width: 100%; height: 100%; border: 0; }
+
+.cancion {
+  position: fixed;
+  left: clamp(1rem, 3vw, 2.2rem);
+  bottom: clamp(1.1rem, 3vh, 2.4rem);
+  z-index: 300;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.5rem 1rem 0.5rem 0.8rem;
+  border: 1px solid rgba(255, 243, 214, 0.2);
+  border-radius: 999px;
+  background: rgba(6, 5, 14, 0.62);
   color: var(--crema-suave);
-  pointer-events: none;
-  animation: latir 3.4s ease-in-out 2s infinite backwards;
+  font-family: inherit;
+  font-size: 0.66rem;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  transition: color 0.3s ease, border-color 0.3s ease;
+  animation: aparecer 1.6s ease-out 1.4s backwards;
+}
+
+.cancion:hover { color: var(--crema); border-color: rgba(255, 225, 104, 0.5); }
+.cancion:focus-visible { outline: 2px solid var(--amarillo); outline-offset: 3px; }
+
+.cancion__nota { font-size: 1rem; line-height: 1; color: var(--amarillo); }
+
+.cancion[aria-pressed="true"] .cancion__nota {
+  animation: latir 1.9s ease-in-out infinite;
 }
 
 @keyframes latir {
-  0%, 100% { opacity: 0.35; }
-  50%      { opacity: 0.85; }
+  0%, 100% { opacity: 0.4; }
+  50%      { opacity: 1; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2223,7 +2265,6 @@ body {
     transition-duration: 0.001ms !important;
   }
   .mensaje, .marca { opacity: 1; }
-  .pista { display: none; }
 }
 </style>
 
@@ -2582,7 +2623,12 @@ body {
   <p class="mensaje__firma">Josué Hernández</p>
 </div>
 
-<p class="pista">Toca la pantalla</p>
+<div class="reproductor"><div id="yt"></div></div>
+
+<button class="cancion" id="cancion" type="button" aria-pressed="false">
+  <span class="cancion__nota" aria-hidden="true">♪</span>
+  <span class="cancion__texto">Poner la canción</span>
+</button>
 
 <div class="marca" aria-hidden="true">
   <svg viewBox="0 0 1080 1080" xmlns="http://www.w3.org/2000/svg" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
@@ -2623,9 +2669,76 @@ body {
       document.querySelector(".mensaje__firma").textContent = de;
     }
 
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    /* --- La canción -------------------------------------------------
+       El navegador bloquea el sonido hasta que alguien toca la página,
+       así que se intenta arrancar sola y, si no la dejan, el primer
+       toque en cualquier parte la pone. El botón siempre manda. */
+
+    var VIDEO = "S7gMzYqXIZc";
+    var DESDE = 30;
+    var VOLUMEN = 35;
+
+    var boton = document.getElementById("cancion");
+    var texto = boton.querySelector(".cancion__texto");
+    var player = null;
+    var tocada = false;
+
+    function sonando() {
+      return player && typeof player.getPlayerState === "function" &&
+             player.getPlayerState() === YT.PlayerState.PLAYING;
+    }
+
+    function pintar(activa) {
+      boton.setAttribute("aria-pressed", activa ? "true" : "false");
+      texto.textContent = activa ? "Pausar la canción" : "Poner la canción";
+    }
+
+    function arrancar() {
+      if (!player || sonando()) return;
+      player.setVolume(VOLUMEN);
+      if (!tocada) { player.seekTo(DESDE); tocada = true; }
+      player.playVideo();
+    }
+
+    window.onYouTubeIframeAPIReady = function () {
+      player = new YT.Player("yt", {
+        videoId: VIDEO,
+        playerVars: {
+          autoplay: 1,
+          start: DESDE,
+          controls: 1,
+          modestbranding: 1,
+          rel: 0,
+          playsinline: 1,
+          origin: location.origin
+        },
+        events: {
+          onReady: function (e) {
+            e.target.setVolume(VOLUMEN);
+            e.target.playVideo();
+            tocada = true;
+          },
+          onStateChange: function (e) {
+            pintar(e.data === YT.PlayerState.PLAYING);
+          }
+        }
+      });
+    };
+
+    boton.addEventListener("pointerdown", function (e) { e.stopPropagation(); });
+    boton.addEventListener("click", function () {
+      if (sonando()) player.pauseVideo();
+      else arrancar();
+    });
+
+    /* --- Corazones al tocar, y la canción con el primer toque ------- */
+
+    var suave = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     document.addEventListener("pointerdown", function (e) {
+      arrancar();
+      if (suave) return;
+
       var svg = document.createElementNS(NS, "svg");
       svg.setAttribute("viewBox", "0 0 32 32");
       svg.setAttribute("class", "toque");
@@ -2640,3 +2753,4 @@ body {
     });
   })();
 </script>
+<script src="https://www.youtube.com/iframe_api"></script>
