@@ -2109,6 +2109,27 @@ body {
   color: var(--crema-suave);
 }
 
+/* El remate: la frase que carga el peso de toda la página */
+.mensaje__remate {
+  margin-top: 0.35rem;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-weight: 300;
+  font-style: italic;
+  font-size: clamp(1.95rem, 5.4vw, 2.6rem);
+  line-height: 1;
+  color: var(--amarillo);
+  text-shadow: 0 0.12em 0.85em rgba(6, 5, 14, 0.95);
+}
+
+.mensaje__firma {
+  margin-top: -0.35rem;
+  font-size: 0.7rem;
+  font-weight: 400;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--crema-suave);
+}
+
 /* Vertical / móvil: el texto arriba, las flores crecen hacia él */
 @media (max-aspect-ratio: 1/1) {
   .mensaje {
@@ -2553,10 +2574,12 @@ body {
 </div>
 
 <div class="mensaje">
-  <p class="mensaje__fecha">Para ti</p>
+  <p class="mensaje__fecha">Para Andrea Navarro</p>
   <h1 class="mensaje__titulo">Feliz día del <em>amor</em> y la <em>amistad</em></h1>
   <p class="mensaje__linea">Ahí están tus flores amarillas.</p>
   <p class="mensaje__nota">Las escogí de las que no se marchitan: vuelven a florecer cada vez que abres este link.</p>
+  <p class="mensaje__remate">Te amo.</p>
+  <p class="mensaje__firma">Josué Hernández</p>
 </div>
 
 <p class="pista">Toca la pantalla</p>
@@ -2597,10 +2620,7 @@ body {
 
     var de = limpio(params.get("de"));
     if (de) {
-      var firma = document.createElement("p");
-      firma.className = "mensaje__fecha";
-      firma.textContent = "— " + de;
-      document.querySelector(".mensaje").appendChild(firma);
+      document.querySelector(".mensaje__firma").textContent = de;
     }
 
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;

@@ -4,12 +4,14 @@ Un jardín nocturno en CSS con un mensaje para el día del amor y la amistad.
 
 **Ver:** https://joshertmr.github.io/flores-amarillas/
 
-El mensaje acepta dos parámetros opcionales en la URL:
+Va dedicada a Andrea Navarro y firmada por Josué Hernández. Dos parámetros
+opcionales permiten reutilizar la misma página con otros nombres sin tocar el
+código:
 
-- `?para=Nombre` — cambia el encabezado a «Para Nombre»
-- `?de=Nombre` — añade una firma al final
+- `?para=Nombre` — reemplaza el encabezado
+- `?de=Nombre` — reemplaza la firma
 
-Ejemplo: `https://joshertmr.github.io/flores-amarillas/?para=Ana&de=Josué`
+Ejemplo: `https://joshertmr.github.io/flores-amarillas/?para=Ana&de=María`
 
 ## Créditos
 
