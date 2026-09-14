@@ -44,19 +44,18 @@
 }
 
 body {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  min-height: 100vh;
+  /* P12 · svh: la unidad pequeña nunca supera el viewport real, así que
+     no puede generar scroll cuando la barra del navegador se retrae.
+     P8/veredicto overflow: sin `overflow: hidden`, sin flex y sin
+     `perspective` (que convertía a `body` en bloque contenedor de todo
+     lo fijo). Las dos capas hermanas se encargan de la composición. */
+  min-block-size: 100vh;
+  min-block-size: 100svh;
   background-color: var(--dark-color);
-  overflow: hidden;
-  perspective: 1000px;
 }
 .night {
-  position: fixed;
-  left: 50%;
-  top: 0;
-  transform: translateX(-50%);
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   filter: blur(0.1vmin);
@@ -95,7 +94,15 @@ body {
 }
 
 .flowers {
-  position: relative;
+  /* P8 · la escena deja de ser un ancla de 0×0 suelta en el flujo:
+     se cuelga del borde inferior de `.escena`, que sí tiene caja y
+     recorta. El punto de anclaje (0×0 en el centro-abajo) se conserva
+     para no alterar ninguno de los offsets heredados del CodePen. */
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 0;
+  height: 0;
   transform: scale(0.9);
 }
 
@@ -187,6 +194,59 @@ body {
 .flower--3 .flower__line__leaf--3 {
   -webkit-animation: blooming-leaf-left var(--fl-speed) 2.1s backwards;
   animation: blooming-leaf-left var(--fl-speed) 2.1s backwards;
+}
+.flower--4 {
+  /* P9 · antes no existía ninguna regla para `.flower--4`: heredaba la
+     base (left 0, sin animación) y quedaba como una cuarta flor estática
+     calcada sobre la primera. Ahora tiene sitio, tallo y cadencia propios. */
+  left: 50%;
+  z-index: 9;
+  transform: rotate(36deg);
+  -webkit-animation: moving-flower-4 4.6s linear infinite;
+  animation: moving-flower-4 4.6s linear infinite;
+}
+.flower--4 .flower__line {
+  height: 48vmin;
+  -webkit-animation-delay: 1.2s;
+  animation-delay: 1.2s;
+}
+.flower--4 .flower__leafs {
+  -webkit-animation-delay: 2s;
+  animation-delay: 2s;
+}
+.flower--4 .flower__line__leaf--1 {
+  -webkit-animation: blooming-leaf-right var(--fl-speed) 2.8s backwards;
+  animation: blooming-leaf-right var(--fl-speed) 2.8s backwards;
+}
+.flower--4 .flower__line__leaf--2 {
+  -webkit-animation: blooming-leaf-right var(--fl-speed) 2.6s backwards;
+  animation: blooming-leaf-right var(--fl-speed) 2.6s backwards;
+}
+.flower--4 .flower__line__leaf--3 {
+  -webkit-animation: blooming-leaf-left var(--fl-speed) 2.4s backwards;
+  animation: blooming-leaf-left var(--fl-speed) 2.4s backwards;
+}
+.flower--4 .flower__line__leaf--4 {
+  -webkit-animation: blooming-leaf-left var(--fl-speed) 2.2s backwards;
+  animation: blooming-leaf-left var(--fl-speed) 2.2s backwards;
+}
+@-webkit-keyframes moving-flower-4 {
+  0%,
+  100% {
+    transform: rotate(36deg);
+  }
+  50% {
+    transform: rotate(33deg) rotateY(-8deg);
+  }
+}
+@keyframes moving-flower-4 {
+  0%,
+  100% {
+    transform: rotate(36deg);
+  }
+  50% {
+    transform: rotate(33deg) rotateY(-8deg);
+  }
 }
 .flower--3 .flower__line__leaf--4 {
   -webkit-animation: blooming-leaf-left var(--fl-speed) 1.9s backwards;
@@ -1002,7 +1062,7 @@ body {
 .flower__g-fr {
   position: absolute;
   bottom: -4vmin;
-  left: vmin;
+  left: 1vmin; /* P10 · `vmin` sin número no es longitud: el parser descartaba la declaración */
   transform-origin: bottom left;
   z-index: 10;
   -webkit-animation: flower__g-fr-ans 2s linear infinite;
@@ -1583,27 +1643,32 @@ body {
 }
 .bubbles {
   position: absolute;
-  top: 0;
-  left: 0;
+  inset: 0;
   height: 100%;
   width: 100%;
   pointer-events: none;
 }
 
 .bubble {
+  /* P11 · antes la posición iba en % del contenedor y el tamaño en vmin:
+     dos sistemas distintos, así que el borde derecho se salía hasta 11 px.
+     Ahora el tamaño va en cqmin (referido a `.escena`, que es el mismo
+     contenedor del que salen los %) y el % sitúa el CENTRO del corazón,
+     no su esquina, con lo que el sangrado queda simétrico y acotado. */
   position: absolute;
   z-index: 200;
   border-radius: 50%;
+  translate: -50% -50%;
 }
 .bubble:nth-child(1) {
   top: 8%;
   left: 60%;
 
-  height: 11vmin;
-  width: 11vmin;
+  height: 11cqmin;
+  width: 11cqmin;
   -webkit-animation: love-burst 3s infinite 0s;
   animation: love-burst 3s infinite 0s;
-  box-shadow: inset 0 0 0 5.5vmin transparent;
+  box-shadow: inset 0 0 0 5.5cqmin transparent;
   -webkit-transform: translate(0, 0.05em) scale(0);
   transform: translate(0, 0.05em) scale(0);
   -webkit-transform-origin: center bottom;
@@ -1612,11 +1677,11 @@ body {
 .bubble:nth-child(2) {
   top: 83%;
   left: 14%;
-  height: 20vmin;
-  width: 20vmin;
+  height: 20cqmin;
+  width: 20cqmin;
   -webkit-animation: love-burst 3s infinite 0.15s;
   animation: love-burst 3s infinite 0.15s;
-  box-shadow: inset 0 0 0 10vmin transparent;
+  box-shadow: inset 0 0 0 10cqmin transparent;
   -webkit-transform: translate(0, 0.75em) scale(0);
   transform: translate(0, 0.75em) scale(0);
   -webkit-transform-origin: center bottom;
@@ -1625,11 +1690,11 @@ body {
 .bubble:nth-child(3) {
   top: 25%;
   left: 49%;
-  height: 4vmin;
-  width: 4vmin;
+  height: 4cqmin;
+  width: 4cqmin;
   -webkit-animation: love-burst 3s infinite 0.3s;
   animation: love-burst 3s infinite 0.3s;
-  box-shadow: inset 0 0 0 2vmin transparent;
+  box-shadow: inset 0 0 0 2cqmin transparent;
   -webkit-transform: translate(0, 0.5em) scale(0);
   transform: translate(0, 0.5em) scale(0);
   -webkit-transform-origin: center bottom;
@@ -1638,11 +1703,11 @@ body {
 .bubble:nth-child(4) {
   top: 63%;
   left: 93%;
-  height: 3vmin;
-  width: 3vmin;
+  height: 3cqmin;
+  width: 3cqmin;
   -webkit-animation: love-burst 3s infinite 0.45s;
   animation: love-burst 3s infinite 0.45s;
-  box-shadow: inset 0 0 0 1.5vmin transparent;
+  box-shadow: inset 0 0 0 1.5cqmin transparent;
   -webkit-transform: translate(0, 0.35em) scale(0);
   transform: translate(0, 0.35em) scale(0);
   -webkit-transform-origin: center bottom;
@@ -1651,11 +1716,11 @@ body {
 .bubble:nth-child(5) {
   top: 7%;
   left: 56%;
-  height: 18vmin;
-  width: 18vmin;
+  height: 18cqmin;
+  width: 18cqmin;
   -webkit-animation: love-burst 3s infinite 0.6s;
   animation: love-burst 3s infinite 0.6s;
-  box-shadow: inset 0 0 0 9vmin transparent;
+  box-shadow: inset 0 0 0 9cqmin transparent;
   -webkit-transform: translate(0, 0.3em) scale(0);
   transform: translate(0, 0.3em) scale(0);
   -webkit-transform-origin: center bottom;
@@ -1664,11 +1729,11 @@ body {
 .bubble:nth-child(6) {
   top: 10%;
   left: 68%;
-  height: 5vmin;
-  width: 5vmin;
+  height: 5cqmin;
+  width: 5cqmin;
   -webkit-animation: love-burst 3s infinite 0.75s;
   animation: love-burst 3s infinite 0.75s;
-  box-shadow: inset 0 0 0 2.5vmin transparent;
+  box-shadow: inset 0 0 0 2.5cqmin transparent;
   -webkit-transform: translate(0, 1.1em) scale(0);
   transform: translate(0, 1.1em) scale(0);
   -webkit-transform-origin: center bottom;
@@ -1677,11 +1742,11 @@ body {
 .bubble:nth-child(7) {
   top: 68%;
   left: 1%;
-  height: 5vmin;
-  width: 5vmin;
+  height: 5cqmin;
+  width: 5cqmin;
   -webkit-animation: love-burst 3s infinite 0.9s;
   animation: love-burst 3s infinite 0.9s;
-  box-shadow: inset 0 0 0 2.5vmin transparent;
+  box-shadow: inset 0 0 0 2.5cqmin transparent;
   -webkit-transform: translate(0, 0.15em) scale(0);
   transform: translate(0, 0.15em) scale(0);
   -webkit-transform-origin: center bottom;
@@ -1690,11 +1755,11 @@ body {
 .bubble:nth-child(8) {
   top: 61%;
   left: 51%;
-  height: 11vmin;
-  width: 11vmin;
+  height: 11cqmin;
+  width: 11cqmin;
   -webkit-animation: love-burst 3s infinite 1.05s;
   animation: love-burst 3s infinite 1.05s;
-  box-shadow: inset 0 0 0 5.5vmin transparent;
+  box-shadow: inset 0 0 0 5.5cqmin transparent;
   -webkit-transform: translate(0, 1.05em) scale(0);
   transform: translate(0, 1.05em) scale(0);
   -webkit-transform-origin: center bottom;
@@ -1703,11 +1768,11 @@ body {
 .bubble:nth-child(9) {
   top: 24%;
   left: 45%;
-  height: 11vmin;
-  width: 11vmin;
+  height: 11cqmin;
+  width: 11cqmin;
   -webkit-animation: love-burst 3s infinite 1.2s;
   animation: love-burst 3s infinite 1.2s;
-  box-shadow: inset 0 0 0 5.5vmin transparent;
+  box-shadow: inset 0 0 0 5.5cqmin transparent;
   -webkit-transform: translate(0, 1em) scale(0);
   transform: translate(0, 1em) scale(0);
   -webkit-transform-origin: center bottom;
@@ -1716,11 +1781,11 @@ body {
 .bubble:nth-child(10) {
   top: 13%;
   left: 10%;
-  height: 19vmin;
-  width: 19vmin;
+  height: 19cqmin;
+  width: 19cqmin;
   -webkit-animation: love-burst 3s infinite 1.35s;
   animation: love-burst 3s infinite 1.35s;
-  box-shadow: inset 0 0 0 9.5vmin transparent;
+  box-shadow: inset 0 0 0 9.5cqmin transparent;
   -webkit-transform: translate(0, 1em) scale(0);
   transform: translate(0, 1em) scale(0);
   -webkit-transform-origin: center bottom;
@@ -1729,11 +1794,11 @@ body {
 .bubble:nth-child(11) {
   top: 76%;
   left: 7%;
-  height: 14vmin;
-  width: 14vmin;
+  height: 14cqmin;
+  width: 14cqmin;
   -webkit-animation: love-burst 3s infinite 1.5s;
   animation: love-burst 3s infinite 1.5s;
-  box-shadow: inset 0 0 0 7vmin transparent;
+  box-shadow: inset 0 0 0 7cqmin transparent;
   -webkit-transform: translate(0, 0.1em) scale(0);
   transform: translate(0, 0.1em) scale(0);
   -webkit-transform-origin: center bottom;
@@ -1742,11 +1807,11 @@ body {
 .bubble:nth-child(12) {
   top: 22%;
   left: 8%;
-  height: 17vmin;
-  width: 17vmin;
+  height: 17cqmin;
+  width: 17cqmin;
   -webkit-animation: love-burst 3s infinite 1.65s;
   animation: love-burst 3s infinite 1.65s;
-  box-shadow: inset 0 0 0 8.5vmin transparent;
+  box-shadow: inset 0 0 0 8.5cqmin transparent;
   -webkit-transform: translate(0, 0.2em) scale(0);
   transform: translate(0, 0.2em) scale(0);
   -webkit-transform-origin: center bottom;
@@ -1755,11 +1820,11 @@ body {
 .bubble:nth-child(13) {
   top: 23%;
   left: 81%;
-  height: 16vmin;
-  width: 16vmin;
+  height: 16cqmin;
+  width: 16cqmin;
   -webkit-animation: love-burst 3s infinite 1.8s;
   animation: love-burst 3s infinite 1.8s;
-  box-shadow: inset 0 0 0 8vmin transparent;
+  box-shadow: inset 0 0 0 8cqmin transparent;
   -webkit-transform: translate(0, 0.1em) scale(0);
   transform: translate(0, 0.1em) scale(0);
   -webkit-transform-origin: center bottom;
@@ -1768,11 +1833,11 @@ body {
 .bubble:nth-child(14) {
   top: 77%;
   left: 88%;
-  height: 3vmin;
-  width: 3vmin;
+  height: 3cqmin;
+  width: 3cqmin;
   -webkit-animation: love-burst 3s infinite 1.95s;
   animation: love-burst 3s infinite 1.95s;
-  box-shadow: inset 0 0 0 1.5vmin transparent;
+  box-shadow: inset 0 0 0 1.5cqmin transparent;
   -webkit-transform: translate(0, 0.45em) scale(0);
   transform: translate(0, 0.45em) scale(0);
   -webkit-transform-origin: center bottom;
@@ -1781,11 +1846,11 @@ body {
 .bubble:nth-child(15) {
   top: 41%;
   left: 1%;
-  height: 9vmin;
-  width: 9vmin;
+  height: 9cqmin;
+  width: 9cqmin;
   -webkit-animation: love-burst 3s infinite 2.1s;
   animation: love-burst 3s infinite 2.1s;
-  box-shadow: inset 0 0 0 4.5vmin transparent;
+  box-shadow: inset 0 0 0 4.5cqmin transparent;
   -webkit-transform: translate(0, 0.05em) scale(0);
   transform: translate(0, 0.05em) scale(0);
   -webkit-transform-origin: center bottom;
@@ -1794,11 +1859,11 @@ body {
 .bubble:nth-child(16) {
   top: 51%;
   left: 51%;
-  height: 8vmin;
-  width: 8vmin;
+  height: 8cqmin;
+  width: 8cqmin;
   -webkit-animation: love-burst 3s infinite 2.25s;
   animation: love-burst 3s infinite 2.25s;
-  box-shadow: inset 0 0 0 4vmin transparent;
+  box-shadow: inset 0 0 0 4cqmin transparent;
   -webkit-transform: translate(0, 1.15em) scale(0);
   transform: translate(0, 1.15em) scale(0);
   -webkit-transform-origin: center bottom;
@@ -1807,11 +1872,11 @@ body {
 .bubble:nth-child(17) {
   top: 37%;
   left: 65%;
-  height: 11vmin;
-  width: 11vmin;
+  height: 11cqmin;
+  width: 11cqmin;
   -webkit-animation: love-burst 3s infinite 2.4s;
   animation: love-burst 3s infinite 2.4s;
-  box-shadow: inset 0 0 0 5.5vmin transparent;
+  box-shadow: inset 0 0 0 5.5cqmin transparent;
   -webkit-transform: translate(0, 0.2em) scale(0);
   transform: translate(0, 0.2em) scale(0);
   -webkit-transform-origin: center bottom;
@@ -1820,11 +1885,11 @@ body {
 .bubble:nth-child(18) {
   top: 11%;
   left: 83%;
-  height: 18vmin;
-  width: 18vmin;
+  height: 18cqmin;
+  width: 18cqmin;
   -webkit-animation: love-burst 3s infinite 2.55s;
   animation: love-burst 3s infinite 2.55s;
-  box-shadow: inset 0 0 0 9vmin transparent;
+  box-shadow: inset 0 0 0 9cqmin transparent;
   -webkit-transform: translate(0, 0.9em) scale(0);
   transform: translate(0, 0.9em) scale(0);
   -webkit-transform-origin: center bottom;
@@ -1833,11 +1898,11 @@ body {
 .bubble:nth-child(19) {
   top: 64%;
   left: 86%;
-  height: 12vmin;
-  width: 12vmin;
+  height: 12cqmin;
+  width: 12cqmin;
   -webkit-animation: love-burst 3s infinite 2.7s;
   animation: love-burst 3s infinite 2.7s;
-  box-shadow: inset 0 0 0 6vmin transparent;
+  box-shadow: inset 0 0 0 6cqmin transparent;
   -webkit-transform: translate(0, 0.65em) scale(0);
   transform: translate(0, 0.65em) scale(0);
   -webkit-transform-origin: center bottom;
@@ -1846,11 +1911,11 @@ body {
 .bubble:nth-child(20) {
   top: 39%;
   left: 24%;
-  height: 19vmin;
-  width: 19vmin;
+  height: 19cqmin;
+  width: 19cqmin;
   -webkit-animation: love-burst 3s infinite 2.85s;
   animation: love-burst 3s infinite 2.85s;
-  box-shadow: inset 0 0 0 9.5vmin transparent;
+  box-shadow: inset 0 0 0 9.5cqmin transparent;
   -webkit-transform: translate(0, 0.2em) scale(0);
   transform: translate(0, 0.2em) scale(0);
   -webkit-transform-origin: center bottom;
@@ -2038,32 +2103,127 @@ body {
   background-image: linear-gradient(to top, var(--oro) 0%, var(--amarillo) 72%);
 }
 
+/* ===============================================================
+   ARQUITECTURA · dos capas fijas hermanas + una sola rejilla
+   ---------------------------------------------------------------
+   .escena   (z 0)   decoración. Recorte declarado y local.
+   .interfaz (z 300) contenido. Sin overflow: si algo se sale, es un bug.
+   body/html         sin overflow:hidden. Criterio de cierre.
+   =============================================================== */
+
+/* --- Capa decorativa -------------------------------------------- */
+
+.escena {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  /* P8 / veredicto (A): el sangrado de la maceta es intencionado, como
+     un `background-size: cover`. Se recorta aquí, en la capa que lo
+     produce, en vez de en `body { overflow: hidden }`. */
+  overflow: clip;
+  pointer-events: none;
+  /* Caja real para la escena: ahora se puede dimensionar, recortar y
+     consultar con container queries (las burbujas usan cqmin). */
+  container-type: size;
+  container-name: escena;
+  /* La perspectiva vivía en `body`, donde además lo convertía en bloque
+     contenedor de todo lo `fixed`. Su sitio es la capa 3D. */
+  perspective: 1000px;
+}
+
+/* --- Capa de interfaz ------------------------------------------- */
+
+.interfaz {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: grid;
+  /* P1/P5/P6/P7/P13 · contexto para la tipografía BIDIMENSIONAL:
+     cqmin sobre esta caja = el menor de (ancho útil, alto útil). Un
+     viewport corto encoge el texto exactamente igual que uno estrecho. */
+  container-type: size;
+  container-name: ui;
+  padding: var(--pad-ui);
+  gap: var(--gap-ui);
+  pointer-events: none;
+
+  /* ---------- Composición 1 · VERTICAL (y CUADRADO) ----------
+     Texto arriba, aire en medio para que crezcan las flores,
+     controles abajo. Es la composición base (mobile-first);
+     P13-A: el empate exacto en 1/1 cae aquí a propósito. */
+  --pad-ui: clamp(0.85rem, 3vmin, 2rem);
+  --gap-ui: clamp(0.5rem, 1.8vmin, 1.25rem);
+
+  --w-mensaje: 100%;
+  --w-titulo: 18ch;
+  --w-nota: 34ch;
+
+  --gap-msg: clamp(0.4rem, 0.28rem + 1.9cqmin, 1.15rem);
+  --fs-fecha: clamp(0.78rem, 0.66rem + 0.75cqmin, 0.95rem);
+  --fs-titulo: clamp(1.8rem, 1rem + 5.9cqmin, 3.4rem);
+  --fs-linea: clamp(1.05rem, 0.78rem + 2.1cqmin, 1.6rem);
+  --fs-nota: clamp(0.8rem, 0.7rem + 0.78cqmin, 1rem);
+  --fs-remate: clamp(1.4rem, 0.9rem + 3.9cqmin, 2.4rem);
+  --fs-firma: clamp(0.78rem, 0.67rem + 0.7cqmin, 0.9rem);
+  --fs-boton: clamp(0.78rem, 0.72rem + 0.35cqmin, 0.88rem);
+
+  --w-marca: clamp(54px, 14cqmin, 100px);
+
+  --velo-x: 50%;
+  --velo-y: 21%;
+  --velo-w: 84%;
+  --velo-h: 45%;
+
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    "mensaje mensaje"
+    "aire    aire"
+    "cancion marca";
+}
+
+/* P2 · el velo se desacopla de la caja del mensaje. Antes era
+   `.mensaje::before { inset: -45% -32% }`, o sea 164 % × 190 % del
+   bloque, creciendo con él y sin techo: la única fuente de
+   desbordamiento horizontal de toda la página. Ahora es una capa
+   fija de tamaño viewport: no puede desbordar por definición. */
+.interfaz::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse var(--velo-w) var(--velo-h) at var(--velo-x) var(--velo-y),
+    rgba(6, 5, 14, 0.94) 0%,
+    rgba(6, 5, 14, 0.72) 45%,
+    rgba(6, 5, 14, 0) 100%
+  );
+  animation: aparecer 1.6s ease-out 0.2s backwards;
+}
+
 /* --- El mensaje ------------------------------------------------ */
 
 .mensaje {
-  position: fixed;
-  z-index: 300;
+  grid-area: mensaje;
   display: flex;
   flex-direction: column;
-  gap: 1.15rem;
-  padding: 2.6rem 1.9rem;
+  /* Tope real de altura: sin esto, `align-self: center` lo desborda por
+     arriba y por abajo a la vez cuando no cabe. */
+  max-block-size: 100%;
+  min-block-size: 0;
+  gap: var(--gap-msg);
+  inline-size: 100%;
+  max-inline-size: var(--w-mensaje);
+  min-inline-size: 0;
+  min-block-size: 0;
   pointer-events: none;
   text-wrap: pretty;
+  align-items: center;
+  text-align: center;
+  justify-self: center;
+  align-self: start;
   animation: llegar 1.4s cubic-bezier(0.22, 0.61, 0.36, 1) 0.35s backwards;
-}
-
-/* Velo suave tras el texto: se apaga del todo antes del borde, sin costura */
-.mensaje::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  inset: -45% -32%;
-  background: radial-gradient(
-    closest-side,
-    rgba(6, 5, 14, 0.94) 0%,
-    rgba(6, 5, 14, 0.74) 40%,
-    rgba(6, 5, 14, 0) 100%
-  );
 }
 
 @keyframes llegar {
@@ -2076,7 +2236,7 @@ body {
 }
 
 .mensaje__fecha {
-  font-size: 0.72rem;
+  font-size: var(--fs-fecha);
   font-weight: 400;
   letter-spacing: 0.34em;
   text-transform: uppercase;
@@ -2087,7 +2247,11 @@ body {
   font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif;
   font-weight: 300;
   font-style: italic;
-  font-size: clamp(1.95rem, 8.6vw, 4.8rem);
+  font-size: var(--fs-titulo);
+  /* P5 · la medida se mide en la fuente DEL PROPIO TÍTULO. El
+     `max-width: 36ch` vivía en `.mensaje` y se resolvía contra Jost
+     16 px: una columna de 269 px para una tipografía de 77 px. */
+  max-inline-size: var(--w-titulo);
   line-height: 0.98;
   letter-spacing: -0.005em;
   text-wrap: balance;
@@ -2103,95 +2267,64 @@ body {
 .mensaje__linea {
   font-family: "Cormorant Garamond", Georgia, serif;
   font-weight: 500;
-  font-size: clamp(1.15rem, 4.4vw, 1.72rem);
+  font-size: var(--fs-linea);
   line-height: 1.35;
   text-shadow: 0 0.12em 0.8em rgba(6, 5, 14, 0.95);
 }
 
 .mensaje__nota {
-  max-width: 30ch;
-  font-size: clamp(0.82rem, 3.4vw, 0.95rem);
+  max-inline-size: var(--w-nota);
+  font-size: var(--fs-nota);
   font-weight: 300;
-  line-height: 1.65;
+  line-height: 1.6;
   color: var(--crema-suave);
 }
 
 /* El remate: la frase que carga el peso de toda la página */
 .mensaje__remate {
-  margin-top: 0.35rem;
+  margin-block-start: 0.2em;
   font-family: "Cormorant Garamond", Georgia, serif;
   font-weight: 300;
   font-style: italic;
-  font-size: clamp(1.55rem, 6.2vw, 2.6rem);
+  font-size: var(--fs-remate);
   line-height: 1;
   color: var(--amarillo);
   text-shadow: 0 0.12em 0.85em rgba(6, 5, 14, 0.95);
 }
 
 .mensaje__firma {
-  margin-top: -0.35rem;
-  font-size: 0.7rem;
+  font-size: var(--fs-firma);
   font-weight: 400;
   letter-spacing: 0.3em;
   text-transform: uppercase;
   color: var(--crema-suave);
 }
 
-/* Vertical / móvil: el texto arriba, las flores crecen hacia él */
-@media (max-aspect-ratio: 1/1) {
-  .mensaje {
-    top: 0;
-    left: 0;
-    right: 0;
-    gap: 0.8rem;
-    align-items: center;
-    text-align: center;
-    padding: max(2.2rem, 4.5vh) 1.4rem 2.6rem;
-  }
-  .mensaje__nota { max-width: 26ch; }
-}
-
-/* Pantallas cortas: el bloque tiene que caber antes de que abran las
-   flores, que nacen a 80vmin del borde inferior. */
-@media (max-aspect-ratio: 1/1) and (max-height: 700px) {
-  .mensaje { gap: 0.55rem; padding-top: max(1.3rem, 3vh); }
-  .mensaje__nota { font-size: 0.76rem; line-height: 1.5; max-width: 32ch; }
-  .mensaje__remate { font-size: clamp(1.3rem, 5.2vw, 2rem); }
-}
-
-/* Apaisado / escritorio: el texto a la izquierda, el ramo al centro */
-@media (min-aspect-ratio: 1/1) {
-  .mensaje {
-    top: 50%;
-    left: max(2vw, 1rem);
-    transform: translateY(-50%);
-    align-items: flex-start;
-    max-width: 36ch;
-    text-align: left;
-    padding: 3rem 2.4rem;
-    animation-name: llegar-lado;
-  }
-  @keyframes llegar-lado {
-    from { opacity: 0; transform: translateY(calc(-50% + 1.1rem)); }
-    to   { opacity: 1; transform: translateY(-50%); }
-  }
-}
-
-/* --- Marca de agua --------------------------------------------- */
+/* --- Marca de agua (el logo) ------------------------------------ */
 
 .marca {
-  position: fixed;
-  right: clamp(1rem, 3vw, 2.2rem);
-  bottom: clamp(1rem, 3vh, 2.2rem);
-  z-index: 300;
-  width: clamp(52px, 7vmin, 82px);
+  /* Celda propia de la rejilla: nunca puede pisar ni al mensaje ni al
+     botón, y el padding de `.interfaz` es su margen de seguridad.
+     El tamaño depende del espacio disponible (cqmin), no de píxeles. */
+  grid-area: marca;
+  justify-self: end;
+  align-self: end;
+  inline-size: var(--w-marca);
+  max-inline-size: 100%;
+  block-size: auto;
   color: var(--crema);
   opacity: 0.4;
   pointer-events: none;
   animation: aparecer 1.6s ease-out 1.1s backwards;
 }
 
-.marca svg { display: block; width: 100%; height: auto; }
+.marca svg {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  /* El viewBox es cuadrado: la proporción queda blindada. */
+  aspect-ratio: 1 / 1;
+}
 .marca path { fill: currentColor; }
 
 /* --- Corazones al tocar ---------------------------------------- */
@@ -2213,43 +2346,60 @@ body {
   100% { opacity: 0; transform: translateY(-22vmin) scale(0.75) rotate(10deg); }
 }
 
-/* --- La canción ------------------------------------------------
-   El reproductor de YouTube queda a la vista pero apagado en la
-   esquina; el botón es el control real. */
+/* --- La canción ------------------------------------------------ */
 
+/* P4 · requisito del cliente: el recuadro del reproductor no se ve y no
+   ocupa sitio, pero la lógica de audio sigue viva. `display: none`
+   estrangula la IFrame API de YouTube, así que se reduce la caja a
+   1×1 px transparente y recortada. El iframe interior conserva un
+   tamaño real (YouTube desconfía de reproductores diminutos) y queda
+   recortado por el envoltorio, que al ser `fixed` no deja hueco. */
 .reproductor {
   position: fixed;
-  left: clamp(1rem, 3vw, 2.2rem);
-  bottom: calc(clamp(1.1rem, 3vh, 2.4rem) + 3.1rem);
-  z-index: 300;
-  width: clamp(124px, 16vmin, 168px);
-  aspect-ratio: 16 / 9;
-  border-radius: 0.45rem;
+  /* Anclado en la esquina superior izquierda para que el iframe interior
+     (recortado, invisible) tampoco asome fuera del viewport. */
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  z-index: -1;
+  inline-size: 1px;
+  block-size: 1px;
+  opacity: 0;
+  pointer-events: none;
+  border: 0;
   overflow: hidden;
-  opacity: 0.26;
-  transition: opacity 0.45s ease;
+  clip-path: inset(50%);
 }
 
-.reproductor:hover,
-.reproductor:focus-within { opacity: 0.8; }
-
-.reproductor iframe { display: block; width: 100%; height: 100%; border: 0; }
+.reproductor iframe {
+  display: block;
+  /* YouTube desconfia de reproductores diminutos, asi que se mantiene 320x180
+     salvo que el viewport sea mas estrecho: por debajo de 320px el iframe
+     sobresalia (Galaxy Fold cerrado, 280px). */
+  width: min(320px, 100vw);
+  height: min(180px, 100vh);
+  border: 0;
+}
 
 .cancion {
-  position: fixed;
-  left: clamp(1rem, 3vw, 2.2rem);
-  bottom: clamp(1.1rem, 3vh, 2.4rem);
-  z-index: 300;
+  /* P3 · celda propia + área táctil real de 44×44 px como mínimo. */
+  grid-area: cancion;
+  justify-self: start;
+  align-self: end;
+  pointer-events: auto;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.55rem;
-  padding: 0.5rem 1rem 0.5rem 0.8rem;
+  min-block-size: 44px;
+  min-inline-size: 44px;
+  max-inline-size: 100%;
+  padding: 0.6rem 1.1rem 0.6rem 0.95rem;
   border: 1px solid rgba(255, 243, 214, 0.2);
   border-radius: 999px;
   background: rgba(6, 5, 14, 0.62);
   color: var(--crema-suave);
   font-family: inherit;
-  font-size: 0.66rem;
+  font-size: var(--fs-boton);
   font-weight: 400;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -2263,21 +2413,10 @@ body {
 .cancion:hover { color: var(--crema); border-color: rgba(255, 225, 104, 0.5); }
 .cancion:focus-visible { outline: 2px solid var(--amarillo); outline-offset: 3px; }
 
-.cancion__nota { font-size: 1rem; line-height: 1; color: var(--amarillo); }
+.cancion__nota { font-size: 1.15em; line-height: 1; color: var(--amarillo); }
 
 .cancion[aria-pressed="true"] .cancion__nota {
   animation: latir 1.9s ease-in-out infinite;
-}
-
-/* En apaisado el mensaje ocupa la columna izquierda: el reproductor se va
-   al extremo opuesto, junto a la marca de agua. Esta regla tiene que ir
-   después de la base o la sobrescribe el orden de cascada. */
-@media (min-aspect-ratio: 1/1) {
-  .reproductor {
-    left: auto;
-    right: calc(clamp(1rem, 3vw, 2.2rem) + clamp(52px, 7vmin, 82px) + 1.3rem);
-    bottom: clamp(1rem, 3vh, 2.2rem);
-  }
 }
 
 @keyframes latir {
@@ -2285,18 +2424,163 @@ body {
   50%      { opacity: 1; }
 }
 
+/* ===============================================================
+   P13 · los ejes de la composición
+   ---------------------------------------------------------------
+   El aspecto decide la DISPOSICIÓN; la altura decide la DENSIDAD.
+   El empate exacto en 1/1 (768×768, 800×800) ya no lo resuelve el
+   orden de la cascada: el apaisado empieza estrictamente por encima
+   de 1, así que el cuadrado usa la composición vertical.
+   =============================================================== */
+
+/* ---------- Vertical corto (375×667 y similares) ---------- */
+@media (max-aspect-ratio: 1/1) and (max-height: 700px) {
+  .interfaz {
+    --pad-ui: clamp(0.7rem, 2.4vmin, 1.4rem);
+    --gap-ui: clamp(0.45rem, 1.5vmin, 1rem);
+    --gap-msg: clamp(0.3rem, 0.18rem + 1.5cqmin, 0.85rem);
+    --fs-titulo: clamp(1.7rem, 0.95rem + 5.3cqmin, 3rem);
+    --fs-remate: clamp(1.3rem, 0.85rem + 3.4cqmin, 2.1rem);
+    --fs-nota: clamp(0.78rem, 0.7rem + 0.6cqmin, 0.92rem);
+    --w-nota: 38ch;
+    --w-marca: clamp(46px, 11cqmin, 84px);
+    --velo-y: 24%;
+    --velo-h: 48%;
+  }
+}
+
+/* ---------- Composición 2 · APAISADO ALTO ----------
+   El texto en la columna izquierda, el ramo al centro, los dos
+   controles abajo y separados a cada extremo. */
+@media (min-aspect-ratio: 1.0001/1) and (min-height: 701px) {
+  .interfaz {
+    --pad-ui: clamp(0.85rem, 2.6vmin, 2.2rem);
+    --gap-ui: clamp(0.6rem, 1.6vmin, 1.5rem);
+
+    --w-mensaje: min(100%, 31rem);
+    --w-titulo: 12ch;
+    --w-nota: 32ch;
+
+    --gap-msg: clamp(0.35rem, 0.1rem + 1.6cqmin, 1.15rem);
+    --fs-fecha: clamp(0.78rem, 0.68rem + 0.62cqmin, 0.95rem);
+    --fs-titulo: clamp(1.6rem, 0.85rem + 6.9cqmin, 4.8rem);
+    --fs-linea: clamp(1rem, 0.72rem + 2.1cqmin, 1.72rem);
+    --fs-nota: clamp(0.8rem, 0.72rem + 0.62cqmin, 1rem);
+    --fs-remate: clamp(1.3rem, 0.8rem + 3.6cqmin, 2.6rem);
+    --fs-firma: clamp(0.78rem, 0.68rem + 0.58cqmin, 0.9rem);
+
+    --w-marca: clamp(48px, 7.5cqmin, 86px);
+
+    --velo-x: 23%;
+    --velo-y: 49%;
+    --velo-w: 42%;
+    --velo-h: 54%;
+
+    grid-template-columns: minmax(0, var(--w-mensaje)) minmax(0, 1fr) auto;
+    grid-template-rows: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "mensaje aire aire"
+      "cancion aire marca";
+  }
+
+  .mensaje {
+    align-items: flex-start;
+    text-align: left;
+    justify-self: start;
+    align-self: center;
+  }
+}
+
+/* ---------- Composición 3 · APAISADO BAJO ----------
+   844×390, 1024×600. Aquí el borde inferior lo ocupan las flores y no
+   sobra altura: el mensaje se queda con TODA la columna izquierda
+   (no solo una fila), y los dos controles se apilan en el extremo
+   derecho — el botón arriba, el logo abajo — en vez de repartirse el
+   pie. Composición distinta, no el escritorio encogido. */
+@media (min-aspect-ratio: 1.0001/1) and (max-height: 700px) {
+  .interfaz {
+    --pad-ui: clamp(0.7rem, 2.2vmin, 1.4rem);
+    --gap-ui: clamp(0.45rem, 1.4vmin, 1rem);
+
+    --w-mensaje: min(100%, 27rem);
+    --w-titulo: 15ch;
+    --w-nota: 40ch;
+
+    --gap-msg: clamp(0.3rem, 0.1rem + 1.35cqmin, 0.8rem);
+    --fs-fecha: clamp(0.78rem, 0.7rem + 0.5cqmin, 0.88rem);
+    --fs-titulo: clamp(1.5rem, 0.75rem + 6cqmin, 3.2rem);
+    --fs-linea: clamp(1rem, 0.78rem + 1.7cqmin, 1.45rem);
+    --fs-nota: clamp(0.78rem, 0.72rem + 0.45cqmin, 0.92rem);
+    --fs-remate: clamp(1.25rem, 0.8rem + 3cqmin, 2.1rem);
+    --fs-firma: clamp(0.78rem, 0.7rem + 0.48cqmin, 0.88rem);
+
+    --w-marca: clamp(52px, 10cqmin, 72px);
+
+    --velo-x: 24%;
+    --velo-y: 50%;
+    --velo-w: 44%;
+    --velo-h: 62%;
+
+    grid-template-columns: minmax(0, var(--w-mensaje)) minmax(0, 1fr) auto;
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas:
+      "mensaje aire cancion"
+      "mensaje aire marca";
+  }
+
+  .mensaje {
+    align-items: flex-start;
+    text-align: left;
+    justify-self: start;
+    align-self: center;
+  }
+
+  .cancion { align-self: start; justify-self: end; }
+  .marca   { align-self: end;   justify-self: end; }
+}
+
+/* Ultimo escalon: por debajo de 340px de alto no cabe todo el bloque ni
+   encogiendo la tipografia (medido: a 261px los hijos se salian por abajo
+   aunque la caja ya estaba acotada). Se sacrifica la nota, que es el unico
+   texto prescindible; titulo, remate y firma se conservan siempre.
+   Ningun dispositivo real llega aqui: el apaisado mas bajo del mercado son
+   360px. Es una red de seguridad, no un caso de uso. */
+@media (max-height: 340px) {
+  .interfaz {
+    --gap-msg: clamp(0.2rem, 0.08rem + 1cqmin, 0.5rem);
+    --fs-titulo: clamp(1.25rem, 0.6rem + 5cqmin, 2.4rem);
+    --fs-remate: clamp(1.05rem, 0.7rem + 2.4cqmin, 1.7rem);
+  }
+  .mensaje__nota { display: none; }
+}
+
+/* El monograma en apaisado bajo queda pequeno por falta de altura; se
+   compensa con algo mas de presencia para que no sea una mota. */
+@media (min-aspect-ratio: 1.0001/1) and (max-height: 700px) {
+  .marca { opacity: 0.52; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
+    /* También el retardo: con `animation-fill-mode: backwards` el mensaje,
+       el botón y el velo se quedaban invisibles durante el delay, y una
+       declaración normal de `opacity` no le gana a una animación. */
+    animation-delay: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
   }
-  .mensaje, .marca { opacity: 1; }
+  /* Solo rescatan opacidad los elementos que la animacion deja en 0.
+     `.marca` NO: su 0.4 es de diseno, es una marca de agua. */
+  .mensaje, .cancion { opacity: 1; }
+  .marca { opacity: 0.4; }
 }
 </style>
 </head>
 <body>
 
+<!-- Capa decorativa: se recorta a propósito (overflow: clip). -->
+<div class="escena" aria-hidden="true">
 <div class="night"></div>
   <div class="flowers">
     <div class="flower flower--1">
@@ -2642,6 +2926,11 @@ body {
   <div class="bubble"><svg class="heart" viewBox="0 0 32 32"><path d="M23.6 2c-3.363 0-6.258 2.736-7.599 5.594-1.342-2.858-4.237-5.594-7.601-5.594-4.637 0-8.4 3.764-8.4 8.401 0 9.433 9.516 11.906 16.001 21.232 6.13-9.268 15.999-12.1 15.999-21.232 0-4.637-3.763-8.401-8.4-8.401z"></path></svg></div>
   <div class="bubble"><svg class="heart" viewBox="0 0 32 32"><path d="M23.6 2c-3.363 0-6.258 2.736-7.599 5.594-1.342-2.858-4.237-5.594-7.601-5.594-4.637 0-8.4 3.764-8.4 8.401 0 9.433 9.516 11.906 16.001 21.232 6.13-9.268 15.999-12.1 15.999-21.232 0-4.637-3.763-8.401-8.4-8.401z"></path></svg></div>
 </div>
+</div><!-- /.escena -->
+
+<!-- Capa de contenido: una sola rejilla, una celda por elemento.
+     Sin overflow: aquí no se recorta nada. -->
+<div class="interfaz">
 
 <div class="mensaje">
   <p class="mensaje__fecha">Para Andrea Navarro</p>
@@ -2677,6 +2966,8 @@ body {
     </g>
   </svg>
 </div>
+
+</div><!-- /.interfaz -->
 
 <script>
   (function () {
