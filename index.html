@@ -1,3 +1,10 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#06050E">
+<meta name="description" content="Feliz día del amor y la amistad. Ahí están tus flores amarillas.">
 <title>Tus flores amarillas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2080,7 +2087,7 @@ body {
   font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif;
   font-weight: 300;
   font-style: italic;
-  font-size: clamp(2.7rem, 8.4vw, 4.8rem);
+  font-size: clamp(1.95rem, 8.6vw, 4.8rem);
   line-height: 0.98;
   letter-spacing: -0.005em;
   text-wrap: balance;
@@ -2096,14 +2103,14 @@ body {
 .mensaje__linea {
   font-family: "Cormorant Garamond", Georgia, serif;
   font-weight: 500;
-  font-size: clamp(1.28rem, 3.5vw, 1.72rem);
+  font-size: clamp(1.15rem, 4.4vw, 1.72rem);
   line-height: 1.35;
   text-shadow: 0 0.12em 0.8em rgba(6, 5, 14, 0.95);
 }
 
 .mensaje__nota {
   max-width: 30ch;
-  font-size: 0.92rem;
+  font-size: clamp(0.82rem, 3.4vw, 0.95rem);
   font-weight: 300;
   line-height: 1.65;
   color: var(--crema-suave);
@@ -2115,7 +2122,7 @@ body {
   font-family: "Cormorant Garamond", Georgia, serif;
   font-weight: 300;
   font-style: italic;
-  font-size: clamp(1.95rem, 5.4vw, 2.6rem);
+  font-size: clamp(1.55rem, 6.2vw, 2.6rem);
   line-height: 1;
   color: var(--amarillo);
   text-shadow: 0 0.12em 0.85em rgba(6, 5, 14, 0.95);
@@ -2136,11 +2143,20 @@ body {
     top: 0;
     left: 0;
     right: 0;
+    gap: 0.8rem;
     align-items: center;
     text-align: center;
-    padding-top: max(3.2rem, 7vh);
+    padding: max(2.2rem, 4.5vh) 1.4rem 2.6rem;
   }
   .mensaje__nota { max-width: 26ch; }
+}
+
+/* Pantallas cortas: el bloque tiene que caber antes de que abran las
+   flores, que nacen a 80vmin del borde inferior. */
+@media (max-aspect-ratio: 1/1) and (max-height: 700px) {
+  .mensaje { gap: 0.55rem; padding-top: max(1.3rem, 3vh); }
+  .mensaje__nota { font-size: 0.76rem; line-height: 1.5; max-width: 32ch; }
+  .mensaje__remate { font-size: clamp(1.3rem, 5.2vw, 2rem); }
 }
 
 /* Apaisado / escritorio: el texto a la izquierda, el ramo al centro */
@@ -2278,6 +2294,8 @@ body {
   .mensaje, .marca { opacity: 1; }
 }
 </style>
+</head>
+<body>
 
 <div class="night"></div>
   <div class="flowers">
@@ -2765,3 +2783,5 @@ body {
   })();
 </script>
 <script src="https://www.youtube.com/iframe_api"></script>
+</body>
+</html>
